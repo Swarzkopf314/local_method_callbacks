@@ -10,7 +10,7 @@ module LocalMethodCallbacks
   	alias_method :callbacks, :my_collections
 
   	def initialize(_callbacks = {}, config = nil)
-  		_merge(_callbacks)
+  		hmerge(_callbacks)
 
   		set_configuration(config) # set it during creation
   		yield(configuration) if block_given?
@@ -31,16 +31,14 @@ module LocalMethodCallbacks
 		end
 
 		def merge(other_callbacks)
-			_merge(other_callbacks.callbacks)
+			hmerge(other_callbacks.callbacks)
 		end
 
-		private
-
-			def _merge(hash)
-				KINDS.each do |kind|
-					callbacks[kind] |= hash[kind]
-				end
+		def hmerge(hash)
+			KINDS.each do |kind|
+				callbacks[kind] |= hash[kind]
 			end
+		end
 
   end
 end
