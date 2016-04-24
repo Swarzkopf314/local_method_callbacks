@@ -9,8 +9,8 @@ module LocalMethodCallbacks
 
   	alias_method :callbacks, :my_collections
 
-  	def initialize(callbacks = {}, config = nil)
-  		_merge(callbacks)
+  	def initialize(_callbacks = {}, config = nil)
+  		_merge(_callbacks)
 
   		set_configuration(config) # set it during creation
   		yield(configuration) if block_given?

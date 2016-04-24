@@ -1,3 +1,5 @@
+require 'set'
+
 module LocalMethodCallbacks
   class Wrapper < Delegator
 
