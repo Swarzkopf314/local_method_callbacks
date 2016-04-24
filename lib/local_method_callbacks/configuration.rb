@@ -5,6 +5,10 @@ module LocalMethodCallbacks
 			@configuration ||= default_configuration
 		end
 
+		def set_configuration(config = nil)
+			@configuration = config || default_configuration
+		end
+
 		def configure
 			yield(configuration)
 		end
