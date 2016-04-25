@@ -12,7 +12,7 @@ module LocalMethodCallbacks
 		end
 	end
 
-	def self.curry_callbacks(callbacks, configuration = nil, &block)
+	def self.curry_callbacks(callbacks, configuration = self.configuration, &block)
 		Callbacks.new(callbacks, configuration, &block)
 	end 
 
