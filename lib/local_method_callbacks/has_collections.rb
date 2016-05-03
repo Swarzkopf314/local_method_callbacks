@@ -7,13 +7,14 @@ module LocalMethodCallbacks
 					return @my_collections unless @my_collections.nil?
 					
 					@my_collections = Hash.new do |this, key|
-						this[key] = self.class.__has_collections_config__[key].new
-					end.tap do |h|
-								def h.[]=(key, val)
-									klass = self.class.__has_collections_config__[key]
-									raise "Wrong collection!" if klass && !val.is_a? klass
-									super
-								end
+							config = self.class.__has_collections_config__
+							this[key] = config[key].new if config.has_key? key
+						end.tap do |h|
+							def h.[]=(key, val)
+								klass = self.class.__has_collections_config__[key]
+								raise "Wrong collection!" if klass && !val.is_a? klass
+								super
+							end
 					end
 				end	
 			RUBY
