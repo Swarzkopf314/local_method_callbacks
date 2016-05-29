@@ -22,7 +22,31 @@ module LocalMethodCallbacks
 	 	end
 
  		def with_callbacks_for(object, *methods, &block)
- 			# TODO
+ 			methods = methods.flatten
+ 			singleton = object.singleton_class
+ 			
+ 			method_hash = methods.inject({}) do |memo, name| 
+ 				original = object.method(name)
+ 				memo[name] = {original: object.method(name), singleton: original.owner == singleton_class}
+ 				memo
+ 			end 
+
+ 			method_hash.each do |name, h|
+ 				object.define_singleton_method(name) do |*args|
+
+ 					h[:original].call(*args)
+
+ 				end
+ 			end
+
+ 		ensure
+ 			method_hash.each do |name, h|
+ 				if h[:singleton]
+ 					object.define_singleton_method(name, h[:original])
+ 				else
+ 					singleton.remove_method(name)
+ 				end
+ 			end
 		end
 
 		def wrap_with_callbacks(object, *methods)
@@ -43,6 +67,9 @@ module LocalMethodCallbacks
 		def add_callbacks(kind = :before, *callbacks)
 			callbacks[kind] |= callbacks.flatten
 		end
+
+		private
+
 
   end
 end
