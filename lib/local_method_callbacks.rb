@@ -9,11 +9,12 @@ module LocalMethodCallbacks
 		super.tap do |config|
 			config.pass_receiver = false
 			config.pass_method_name = false
+			config.instance_eval = false
 		end
 	end
 
-	def self.curry_callbacks(callbacks, configuration = self.configuration, &block)
-		Callbacks.new(callbacks, configuration, &block)
+	def self.curry_callbacks(callbacks, &block)
+		Callbacks.new(callbacks, &block)
 	end 
 
 	# conveniece method to be included in object's class
