@@ -21,6 +21,7 @@ module LocalMethodCallbacks
 	 		LocalMethodCallbacks.configuration.dup
 	 	end
 
+		# we avoid using alias to allow nesting these (otherwise there is a loop)
  		def with_callbacks_for(object, *methods, &block)
  			@object = object
  			methods = methods.flatten
