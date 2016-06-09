@@ -71,9 +71,24 @@ module LocalMethodCallbacks
 
 		private
 
+# TODO - moze tak?
+# Proc.class_eval do
+
+# 	# a = proc {p self}
+# 	# x = a.decorate_with {|&b| p :before; b.call; p :after}.decorate_with {|&b| p :before2; b.call; p :after2}
+# 	# x.call # => :before2 :before main :after :after2
+#   def decorate_with(&block)
+#     proc do |*args|
+#       block.call(*args, &self)
+#     end
+#   end
+
+# end
+	
 			def method_with_callbacks(h, args)
 				if callbacks[:around].any?
-					ret = callbacks[:around].each {|c| call_callback(c, h, args.unshift(h[:original]))}
+					# should be only one
+					ret = callbacks[:around].first {|c| call_callback(c, h, args.unshift(h[:original]))}
 				else
 					callbacks[:before].each {|c| call_callback(c, h, args)}
 
