@@ -23,6 +23,7 @@ module LocalMethodCallbacks
 
 		# we avoid using alias to allow nesting these (otherwise there is a loop)
 		# we could curry that object via register_object etc.
+		# we could also register callbacks to object - and trust the programmer to later unregister it (or not)
  		def with_callbacks_for(object, *methods, &block)
  			@object = object
  			methods = methods.flatten
