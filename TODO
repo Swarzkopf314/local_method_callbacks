@@ -1,3 +1,87 @@
-- curried callbacks (i.e. instance of Callbacks class) could also curry an object (via kind of register_object method)
-- add method to add/remove callbacks (to use it without a block)
-- similarly with Wrapper - just return it and give the option to unwrap it
+# - curried callbacks (i.e. instance of Callbacks class) could also curry an object (via kind of register_object method)
+# - add method to add/remove callbacks (to use it without a block)
+# - similarly with Wrapper - just return it and give the option to unwrap it
+
+
+# nalezy includowac do klasy Class albo zrobic extend na konkretnej klasie
+# patrz tez: 
+# => config/initializers.add_global_methods_logger.rb
+# => lib/global_methods_logger.rb
+module GlobalMethodsLogger
+  
+  ### TUTORIAL
+  # NazwaKlasy.log_instance_methods(options) - loguje wszystkie metody instancyjne danej klasy (publiczne, prywatne, protected), ale nie loguje metod z nadklas.
+  #   opcjonalne argumenty wskazuja, że chcemy logować odpowiednio argumenty i wartości zwracane przez metody.
+
+  # NazwaKlasy.log_class_methods(options) - loguje metody klasowe (ale nie metody klasowe nadklas, NIE CHCESZ TEGO)
+
+  # OPCJE:
+  # log_args: true - loguje argumenty metod
+  # log_values: true - loguje wartości zwracane przez metody
+  # log_time: true - loguje czas wykonania metody
+  # before_callback, after_callback - proc, ktory odpala sie na danym obiekcie przez instance_eval
+
+  # NazwaKlasy.log_these_instance_methods [:current_account], options - loguje tylko wskazane metody instancyjne danej klasy (reszta j.w.), takze z nadklas
+
+  # NazwaKlasy.log_these_class_methods [:current_account], options - loguje wskazane metody klasowe danej klasy
+  #   także metody klasowe z nadklas
+  ###
+
+  def log_instance_methods(options = {})
+    methods = []
+    ["", "protected_", "private_"].each {|prefix| methods |= self.send("#{prefix}instance_methods", false)}
+    log_these_instance_methods(methods, options)
+  end
+
+  def log_class_methods(options = {})
+    methods = self.methods(false) - [:send]
+    log_these_class_methods(methods, options)
+  end
+
+  def log_these_class_methods(methods, options = {})
+    options[:klass_name] ||= self.name + "_CLASS_METHOD"
+    self.singleton_class.log_these_instance_methods(methods, options)
+  end
+
+  def log_these_instance_methods(methods, options = {})    
+    klass_name = options[:klass_name] || self.name
+
+    prepend(Module.new do 
+      methods.each do |method|
+        define_method(method) do |*args, &block|
+          return super(*args, &block) if @__disable_external_logging__
+
+          @__disable_external_logging__ = true
+
+          token = Random.rand(10000)
+          
+          @__external_logging_nesting__ ||= 0
+          ind = '  ' * @__external_logging_nesting__
+          
+            log_time = Time.zone.now.to_f
+
+          args_logged = (args.any? && options[:log_args]) ? ", args: #{args}" : ""
+          Rails.logger.ap("#{ind}#{method}_#{token} Called(#{klass_name})#{args_logged}")
+          
+          @__external_logging_nesting__ += 1
+            instance_eval(&options[:before_callback]) if options[:before_callback].is_a? Proc
+              @__disable_external_logging__ = false
+              ret = super(*args, &block) # implicit argument passing of super from method defined by define_method() is not supported. Specify all arguments explicitly.
+              @__disable_external_logging__ = true
+            instance_eval(&options[:after_callback]) if options[:after_callback].is_a? Proc
+          @__external_logging_nesting__ -= 1
+
+            time = ((Time.zone.now.to_f - log_time) * 1000).to_i
+            time_logged = options[:log_time] ? "(time: #{time}ms)" : ""
+
+          result_logged = (!ret.to_s.blank? && options[:log_values]) ? ", result: #{ret}" : ""
+          Rails.logger.ap("#{ind}#{method}_#{token} Terminated(#{klass_name})#{time_logged}#{result_logged}")
+          @__disable_external_logging__ = false
+          ret
+        end # define_method
+      end # each
+    end) # prepend
+
+  end
+
+end # HappyGlobalLogger
