@@ -1,6 +1,7 @@
 # - curried callbacks (i.e. instance of Callbacks class) could also curry an object (via kind of register_object method)
 # - add method to add/remove callbacks (to use it without a block)
 # - similarly with Wrapper - just return it and give the option to unwrap it
+# - add with_class_callbacks_for - work same as with singleton_class
 
 
 # nalezy includowac do klasy Class albo zrobic extend na konkretnej klasie
