@@ -25,6 +25,7 @@ module LocalMethodCallbacks
 		# we could curry that object via register_object etc.
 		# we could also register callbacks to object - and trust the programmer to later unregister it (or not)
 		# but it forces us to keep track of all the methods in order to make it possible to unregister it
+		# and there would be a problem with garbage collecting
  		def with_callbacks_for(object, *methods, &block)
  			@object = object
  			methods = methods.flatten
