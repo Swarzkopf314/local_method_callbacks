@@ -1,3 +1,6 @@
+In short - patrzymy na obiekt/klasę (może singletonową), trzymamy w scop-ie metody, które w niej byly, dodefiniujemy opakowane, wywolujemy blok/funkcje, na koniec w finally/ensure usuwamy nowe metody i przywracamy te, ktore byly w obiekcie/klasie. 
+
+
 # - curried callbacks (i.e. instance of Callbacks class) could also curry an object (via kind of register_object method)
 # - add method to add/remove callbacks (to use it without a block)
 # - similarly with Wrapper - just return it and give the option to unwrap it
