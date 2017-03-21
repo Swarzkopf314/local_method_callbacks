@@ -1,13 +1,10 @@
 module LocalMethodCallbacks
   class Callbacks
   	include Configuration
-  	extend HasCollections
 
   	KINDS = %i[before around after]
 
   	has_collections Array, *KINDS
-
-  	alias_method :callbacks, :my_collections
 
   	def initialize(_callbacks = {})
   		hmerge(_callbacks)
