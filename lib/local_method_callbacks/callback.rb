@@ -21,7 +21,7 @@ module LocalMethodCallbacks
       env.method = callable
       env.method_name = callable.name if callable.respond_to?(:name)
 
-      decorated = case @kind
+      decoration = case @kind
       when :before
         proc {|*args| 
           @body.call env.capture_context(self, args)
@@ -36,7 +36,7 @@ module LocalMethodCallbacks
         }
       end
 
-      return decorated
+      return decoration
     end
 
   end
