@@ -1,5 +1,5 @@
 module LocalMethodCallbacks
-	class Logger < Callbacks
+	class Logger < CallbackChain
 
 		# override
 		def self.default_configuration

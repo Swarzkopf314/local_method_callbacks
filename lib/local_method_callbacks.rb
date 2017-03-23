@@ -4,15 +4,6 @@ require "local_method_callbacks/configuration"
 module LocalMethodCallbacks
 	extend Configuration
 
-	# override
-	def self.default_configuration
-		super.tap do |config|
-			config.pass_receiver = false
-			config.pass_method_name = false
-			config.instance_eval = false
-		end
-	end
-
 	def self.curry_callbacks(callbacks, &block)
 		Callbacks.new(callbacks, &block)
 	end 
