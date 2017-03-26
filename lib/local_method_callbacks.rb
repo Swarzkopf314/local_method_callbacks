@@ -2,7 +2,6 @@ require "local_method_callbacks/version"
 require "local_method_callbacks/configuration"
 
 module LocalMethodCallbacks
-	extend Configuration
 
 	def self.curry_callbacks(callbacks, &block)
 		Callbacks.new(callbacks, &block)

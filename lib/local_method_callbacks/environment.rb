@@ -6,11 +6,15 @@ module LocalMethodCallbacks
     :method_name,
     :receiver,
     :method_arguments,
+    :method_block,
   ) do
 
-    def capture_context(receiver, args)
+    # must return self
+    def capture_context(receiver, args, block)
       self.receiver = receiver
       self.method_arguments = args
+      self.method_block = block
+
       self
     end
 

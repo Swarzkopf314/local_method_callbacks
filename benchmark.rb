@@ -1,10 +1,4 @@
-
-# h = [[4,5], [4,6], [1,3], [1,2], [5,8]]
-
-# p h.group_by {|(k,v)| k}
-
-# exit
-
+# test performance of nesting procs vs calling them sequentially
 require 'benchmark'
 
 n = 100

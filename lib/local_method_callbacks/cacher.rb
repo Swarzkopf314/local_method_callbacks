@@ -1,5 +1,5 @@
 module LocalMethodCallbacks
-	class Cacher < Callbacks
+	class Cacher < CallbackChain
 
 
 	end

@@ -1,16 +1,10 @@
 module LocalMethodCallbacks
   class CallbackChain
 
+  	attr_reader :callbacks
+
   	def initialize(callbacks = [])
   		@callbacks = callbacks
-
-  		set_configuration(default_configuration) # set it during creation
-  		yield(configuration) if block_given?
-	 	end
-
-	 	# override
-	 	def default_configuration
-	 		LocalMethodCallbacks.configuration.dup
 	 	end
 
 		# we avoid using alias to allow nesting these (otherwise there is a loop)
