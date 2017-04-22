@@ -1,27 +1,37 @@
 # test performance of nesting procs vs calling them sequentially
+# nesting the callbacks has better performance than calling them sequentially
+# if NESTING is reasonably low (i.e 100)
+
 require 'benchmark'
 
-n = 100
+TIMES = 10000
+# NESTING = 2000
+# NESTING = 1000
+# NESTING = 500
+NESTING = 100
 
-write = proc {|x| "wywołano #{x}"}
+# write = proc {|x| p "Called #{x}"}
+write = proc {|x| "Called #{x}"}
 kernel = proc { write.("KERNEL") }
 
-procs = Array.new(5000) do |i| 
-  proc {|callable| write.("before #{i}"); callable.call(); write.("after #{i}") }
+procs = Array.new(NESTING) do |i| 
+  proc do |callable, param_to_callable| 
+    write.("before #{i}") 
+    callable.call(param_to_callable) 
+    write.("after #{i}")
+  end
 end
 
-def decorate_proc_with_block(prc)
-  proc {yield(prc)}
-end
+nested = procs.inject(proc {|x| x.call}) {|acc, p| proc {|x| p.call(acc, x)}}
 
 Benchmark.bmbm do |x|
-  x.report("nested") {n.times {
-    procs.inject(kernel) {|acc, n| decorate_proc_with_block(acc, &n)}.call
+  x.report("nested") {TIMES.times {
+    nested.call(kernel)
   }}
   
-  x.report("sequential") {n.times {
-    procs.each do |n|
-      n.call(proc {})
+  x.report("sequential") {TIMES.times {
+    procs.each do |p|
+      p.call(kernel)
     end
   }}
 end
