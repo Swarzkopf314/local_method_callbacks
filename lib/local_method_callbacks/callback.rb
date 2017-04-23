@@ -1,5 +1,6 @@
 # The Callback#body should be a callable accepting one argument - env of class Environment.
 # One can use the env to access scope of a decorated method.
+# ATTENTION - UnboundMethod is NOT callable!
 
 module LocalMethodCallbacks
   class Callback
@@ -16,7 +17,7 @@ module LocalMethodCallbacks
       @body = block_given? ? Proc.new : callable # Proc.new captures block - more efficent than &block
       
       raise "no body specified!" if @body.nil?
-      raise "second argument should be callable!" unless @body.repspond_to?(:call)
+      raise "second argument should be callable!" unless @body.respond_to?(:call)
     end
 
     # returns callable decorated with self.body
@@ -26,7 +27,7 @@ module LocalMethodCallbacks
       env = Environment.new
 
       env.callback = self
-      env.decorated = callbable
+      env.decorated = callable
       env.base_method = base_method
 
       # closure
@@ -35,15 +36,16 @@ module LocalMethodCallbacks
       decoration = case @type
       when :before
         proc {|*args, &block| 
-          my_body.call env.with_context(self, args, block)
+          my_body.call env.with_context(self, args, nil, block)
           callable.call(*args, &block)
         }
       when :around
-        proc {|*args, &block| my_body.call env.with_context(self, args, block)}
+        proc {|*args, &block| my_body.call env.with_context(self, args, nil, block)}
       when :after
         proc {|*args, &block| 
-          callable.call(*args, &block)
-          my_body.call env.with_context(self, args, &block)
+          return_value = callable.call(*args, &block)
+          my_body.call env.with_context(self, args, return_value, block)
+          return_value
         }
       end
 

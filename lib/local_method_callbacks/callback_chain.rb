@@ -32,9 +32,10 @@ module LocalMethodCallbacks
 
  		# if no block is given, returns proc that accepts proc and calls it with decoration
 		def with_class_callbacks(opts = {}, &block)
-			opts = default_opts.merge(opts)
+			opts = @default_opts.merge(opts)
 
-			methods = opts[:method_names].map {|method_name| opts[:class].instance_method(method_name)}
+			# methods = opts[:method_names].map {|method_name| opts[:class].instance_method(method_name)}
+			methods = opts[:method_names].map {|method_name| opts[:object].method(method_name)}
 			
 			new_method_bodies = methods.map do |method|
 				opts[:callbacks].inject(method) do |acc, callback|
@@ -46,7 +47,7 @@ module LocalMethodCallbacks
 				
 				begin
 					opts[:method_names].zip(new_method_bodies).each do |name, new_method_body|
-						opts[:class].define_method(name, new_method_body)
+						opts[:class].send(:define_method, name, new_method_body)
 					end
 
 					decorated_proc.call()
@@ -56,7 +57,7 @@ module LocalMethodCallbacks
 						if old_method.owner == opts[:class] 
 							opts[:class].define_method(old_method.name, old_method)
 						else
-							opts[:class].remove_method(old_method.name)
+							opts[:class].send(:remove_method, old_method.name)
 						end
 					end
 				end
