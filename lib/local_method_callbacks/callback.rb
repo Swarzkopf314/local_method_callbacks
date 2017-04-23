@@ -1,6 +1,5 @@
 # The Callback#body should be a callable accepting one argument - env of class Environment.
 # One can use the env to access scope of a decorated method.
-# 
 
 module LocalMethodCallbacks
   class Callback
@@ -23,12 +22,12 @@ module LocalMethodCallbacks
     # returns callable decorated with self.body
     # we assume it will be used in definition of a method,
     # in particular it will be instance_eval-ed
-    def decorate_with_me(callable)
+    def decorate_with_me(callable, base_method = callable)
       env = Environment.new
 
       env.callback = self
-      env.method = callable
-      env.method_name = callable.name if callable.respond_to?(:name)
+      env.decorated = callbable
+      env.base_method = base_method
 
       # closure
       my_body = @body

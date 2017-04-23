@@ -2,8 +2,8 @@ module LocalMethodCallbacks
   
   Environment = Struct.new(
     :callback,
-    :method,
-    :method_name,
+    :decorated,
+    :base_method,
     :receiver,
     :method_arguments,
     :method_block,
