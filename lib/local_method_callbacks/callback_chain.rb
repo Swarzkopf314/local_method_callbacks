@@ -6,11 +6,11 @@ module LocalMethodCallbacks
 
   	attr_reader :callbacks
 
-  	# defaults: 
-  	# object - object whose methods are redefined
-  	# class - class whose methods are redefined
-  	# callbacks - list of callbacks LocalMethodCallbacks::Callback
-  	# methods - list of methods to be redefined
+  	# default_opts: 
+  	# object: object whose methods are redefined
+  	# class: class whose methods are redefined
+  	# callbacks: list of callbacks LocalMethodCallbacks::Callback
+  	# methods: list of methods to be redefined
   	def initialize(opts = {})
   		@default_opts = opts.dup
   		@default_opts[:callbacks] ||= []
@@ -45,12 +45,13 @@ module LocalMethodCallbacks
 			
 			new_method_bodies = methods.map do |method|
 				opts[:callbacks].inject(method) do |acc, callback|
-					callback.decorate_with_me(acc, method)
+					callback.decorate_with_me(acc, class: opts[:class], base_method: method)
 				end
 			end
 
 			ret = proc do |decorated_proc|
 				
+				# TODO - teraz to zbędne, bo i tak się definiują te metody, ten proc można tworzyć przy with_callbacks
 				begin
 					opts[:method_names].zip(new_method_bodies).each do |name, new_method_body|
 						opts[:class].send(:define_method, name, new_method_body)

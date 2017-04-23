@@ -24,17 +24,27 @@ module LocalMethodCallbacks
       raise "second argument should be callable!" unless @body.respond_to?(:call)
     end
 
+    def decorate_class_method_with_me(decorated, base_method = decorated, klass)
+      # TODO
+      # instead of returning Decoration.new, we do klass.send(:define_method)
+      # we can't use decorate_with_me
+    end
+
     # returns decorated decorated with self.body
     # we assume it will be used in definition of a method,
     # in particular it will be instance_eval-ed
-    def decorate_with_me(decorated, base_method = decorated)
+    # opts:
+    # base_method - 
+    # class - decoration will become a method in a given class
+    def decorate_with_me(decorated, opts = {})
       # env is shared by every method call 
       # that's why we pass env.with_context to the callback
       env = Environment.new 
 
       env.callback = self
-      env.decorated = decorated # NOTE: could be an instance of UnboudMethod
-      env.base_method = base_method
+      env.decorated = decorated # NOTE: could be an instance of UnboundMethod
+      env.base_method = opts[:base_method] || decorated
+      env.class = opts[:class]
 
       # closure
       my_body = @body
@@ -43,17 +53,28 @@ module LocalMethodCallbacks
       when :before
         Decoration.new {|*args, &block|
           env_with_context = env.with_context(self, args, nil, block)
+          
           my_body.call(env_with_context)
+
           env_with_context.decorated.call(*args, &block)
         }
       when :around
         Decoration.new {|*args, &block| my_body.call env.with_context(self, args, nil, block)}
       when :after
         Decoration.new {|*args, &block|
-          return_value = decorated.call(*args, &block)
-          my_body.call env.with_context(self, args, return_value, block)
-          return_value
+          env_with_context = env.with_context(self, args, nil, block)
+
+          env_with_context.return_value = env_with_context.decorated.call(*args, &block)
+
+          my_body.call env_with_context
+
+          env_with_context.return_value
         }
+      end
+
+      if !env.class.nil?
+        env.class.send(:define_method, env.base_method.name, decoration)
+        decoration = env.class.instance_method(env.base_method.name)
       end
 
       return decoration

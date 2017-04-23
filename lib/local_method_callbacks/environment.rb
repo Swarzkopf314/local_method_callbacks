@@ -4,6 +4,7 @@ module LocalMethodCallbacks
     :callback,
     :decorated,
     :base_method, # can be UnboundMethod
+    :class,
     :receiver,
     :method_arguments,
     :method_block,
