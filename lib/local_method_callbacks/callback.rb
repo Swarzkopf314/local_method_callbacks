@@ -1,4 +1,4 @@
-# The Callback#body should be a callable accepting one argument - env of class Environment.
+# The Callback#body should be a decorated accepting one argument - env of class Environment.
 # One can use the env to access scope of a decorated method.
 # ATTENTION - UnboundMethod is NOT callable!
 
@@ -9,25 +9,31 @@ module LocalMethodCallbacks
 
     attr_reader :type, :body
 
-    # ignores callable if block_given?
-    def initialize(type, callable = nil)
+    class Decoration < Proc
+
+    end
+
+    # ignores decorated if block_given?
+    def initialize(type, body = nil)
       raise "uknown type: #{type}" unless TYPES.include?(type)
       @type = type
       
-      @body = block_given? ? Proc.new : callable # Proc.new captures block - more efficent than &block
+      @body = block_given? ? Proc.new : body # Proc.new captures block - more efficent than &block
       
       raise "no body specified!" if @body.nil?
       raise "second argument should be callable!" unless @body.respond_to?(:call)
     end
 
-    # returns callable decorated with self.body
+    # returns decorated decorated with self.body
     # we assume it will be used in definition of a method,
     # in particular it will be instance_eval-ed
-    def decorate_with_me(callable, base_method = callable)
-      env = Environment.new
+    def decorate_with_me(decorated, base_method = decorated)
+      # env is shared by every method call 
+      # that's why we pass env.with_context to the callback
+      env = Environment.new 
 
       env.callback = self
-      env.decorated = callable
+      env.decorated = decorated # NOTE: could be an instance of UnboudMethod
       env.base_method = base_method
 
       # closure
@@ -35,15 +41,16 @@ module LocalMethodCallbacks
 
       decoration = case @type
       when :before
-        proc {|*args, &block| 
-          my_body.call env.with_context(self, args, nil, block)
-          callable.call(*args, &block)
+        Decoration.new {|*args, &block|
+          env_with_context = env.with_context(self, args, nil, block)
+          my_body.call(env_with_context)
+          env_with_context.decorated.call(*args, &block)
         }
       when :around
-        proc {|*args, &block| my_body.call env.with_context(self, args, nil, block)}
+        Decoration.new {|*args, &block| my_body.call env.with_context(self, args, nil, block)}
       when :after
-        proc {|*args, &block| 
-          return_value = callable.call(*args, &block)
+        Decoration.new {|*args, &block|
+          return_value = decorated.call(*args, &block)
           my_body.call env.with_context(self, args, return_value, block)
           return_value
         }

@@ -25,6 +25,11 @@ callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
   p s.dup.to_i
   p "s.to_i in block"
   p s.to_i
+  
+  callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
+    p "s.to_i in nested block"
+    p s.to_i
+  end
 end
 
 p "s.to_i after block"

@@ -1,6 +1,9 @@
 module LocalMethodCallbacks
   class CallbackChain
 
+  	# TODO - ban these
+  	BANNED_METHOD_NAMES = [:method]
+
   	attr_reader :callbacks
 
   	# defaults: 
@@ -23,8 +26,10 @@ module LocalMethodCallbacks
 		# so instance with_callbacks_for should delegate to with_class_callbacks_for
  		def with_callbacks(opts = {}, &block)
  			if opts.has_key?(:object)
+ 				# avoid calling opts[:object].singleton_class (in case smbdy wants to override it with this gem)
+ 				singleton_klass = class << opts[:object]; self end
  				# avoid changing the passed hash
- 				opts = opts.merge(:class => opts[:object].singleton_class)
+ 				opts = opts.merge(:class => singleton_klass)
  			end
 
  			with_class_callbacks(opts, &block)
@@ -34,8 +39,9 @@ module LocalMethodCallbacks
 		def with_class_callbacks(opts = {}, &block)
 			opts = @default_opts.merge(opts)
 
-			# methods = opts[:method_names].map {|method_name| opts[:class].instance_method(method_name)}
-			methods = opts[:method_names].map {|method_name| opts[:object].method(method_name)}
+			# instance_method is a class-level method returning instance-level method, so it's ok
+			methods = opts[:method_names].map {|method_name| opts[:class].instance_method(method_name)}
+			# methods = opts[:method_names].map {|method_name| opts[:object].method(method_name)}
 			
 			new_method_bodies = methods.map do |method|
 				opts[:callbacks].inject(method) do |acc, callback|
@@ -55,7 +61,7 @@ module LocalMethodCallbacks
 					# cleanup
 					methods.each do |old_method|
 						if old_method.owner == opts[:class] 
-							opts[:class].define_method(old_method.name, old_method)
+							opts[:class].send(:define_method, old_method.name, old_method)
 						else
 							opts[:class].send(:remove_method, old_method.name)
 						end

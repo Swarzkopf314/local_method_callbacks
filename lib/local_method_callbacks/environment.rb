@@ -3,22 +3,29 @@ module LocalMethodCallbacks
   Environment = Struct.new(
     :callback,
     :decorated,
-    :base_method,
+    :base_method, # can be UnboundMethod
     :receiver,
     :method_arguments,
     :method_block,
     :return_value, # only in after_callback
   ) do
 
-    # returns self
+    # returns instance of Environment
+    # we pass env.with_context to each callback defined by the user
+    # therefore we do ret = self.dup
     def with_context(receiver, args, return_value, block)
-      self.receiver = receiver
-      # self.base_method = self.base_method.bind(receiver)
-      self.method_arguments = args
-      self.method_block = block
-      self.return_value = return_value
+      ret = self.dup
 
-      self
+      ret.receiver = receiver
+      ret.method_arguments = args
+      ret.return_value = return_value
+      ret.method_block = block
+
+      if self.decorated.is_a? UnboundMethod
+        ret.decorated = self.decorated.bind(receiver)
+      end
+
+      ret
     end
 
   end
