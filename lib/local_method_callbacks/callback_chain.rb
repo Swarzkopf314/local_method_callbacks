@@ -2,7 +2,7 @@ module LocalMethodCallbacks
   class CallbackChain
 
   	# TODO - ban these
-  	BANNED_METHOD_NAMES = [:method]
+  	# BANNED_METHOD_NAMES = [:method]
 
   	attr_reader :callbacks
 
