@@ -43,39 +43,24 @@ module LocalMethodCallbacks
 			methods = opts[:method_names].map {|method_name| opts[:class].instance_method(method_name)}
 			# methods = opts[:method_names].map {|method_name| opts[:object].method(method_name)}
 			
-			new_method_bodies = methods.map do |method|
-				opts[:callbacks].inject(method) do |acc, callback|
-					callback.decorate_with_me(acc, class: opts[:class], base_method: method)
-				end
-			end
-
-			ret = proc do |decorated_proc|
-				
-				# TODO - teraz to zbędne, bo i tak się definiują te metody, ten proc można tworzyć przy with_callbacks
-				begin
-					opts[:method_names].zip(new_method_bodies).each do |name, new_method_body|
-						opts[:class].send(:define_method, name, new_method_body)
+			begin
+				methods.map do |method|
+					opts[:callbacks].inject(method) do |acc, callback|
+						callback.decorate_with_me!(acc, opts[:class], method)
 					end
+				end
 
-					decorated_proc.call()
-				ensure
-					# cleanup
-					methods.each do |old_method|
-						if old_method.owner == opts[:class] 
-							opts[:class].send(:define_method, old_method.name, old_method)
-						else
-							opts[:class].send(:remove_method, old_method.name)
-						end
+				yield
+			ensure
+				# cleanup
+				methods.each do |old_method|
+					if old_method.owner == opts[:class] 
+						opts[:class].send(:define_method, old_method.name, old_method)
+					else
+						opts[:class].send(:remove_method, old_method.name)
 					end
 				end
 			end
-
-			if block.nil?
-				return ret
-			else
-				ret.call(block)
-			end
-
 		end
 
 		# TODO

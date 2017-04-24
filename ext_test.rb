@@ -3,6 +3,7 @@ require "local_method_callbacks"
 
 before_callback = LocalMethodCallbacks::Callback.new(:before) do |env|
   p "#{env.base_method.name} has been called with args: #{env.method_arguments}"
+  p "RECEIVER: #{env.receiver}"
 end
 
 around_callback = LocalMethodCallbacks::Callback.new(:around) do |env|
@@ -14,6 +15,7 @@ end
 
 after_callback = LocalMethodCallbacks::Callback.new(:after) do |env|
   p "#{env.base_method.name} has been called with return value: #{env.return_value}"
+  p "RECEIVER: #{env.receiver}"
 end
 
 callback_chain = LocalMethodCallbacks::CallbackChain.new(callbacks: [before_callback, around_callback, after_callback])
@@ -25,7 +27,7 @@ callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
   p s.dup.to_i
   p "s.to_i in block"
   p s.to_i
-  
+
   callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
     p "s.to_i in nested block"
     p s.to_i

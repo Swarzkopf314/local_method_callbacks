@@ -9,9 +9,7 @@ module LocalMethodCallbacks
 
     attr_reader :type, :body
 
-    class Decoration < Proc
-
-    end
+    class Decoration < Proc; end
 
     # ignores decorated if block_given?
     def initialize(type, body = nil)
@@ -33,18 +31,16 @@ module LocalMethodCallbacks
     # returns decorated decorated with self.body
     # we assume it will be used in definition of a method,
     # in particular it will be instance_eval-ed
-    # opts:
-    # base_method - 
-    # class - decoration will become a method in a given class
-    def decorate_with_me(decorated, opts = {})
+    # decoration will become a method in a given klass
+    def decorate_with_me!(decorated, klass, base_method = nil)
       # env is shared by every method call 
       # that's why we pass env.with_context to the callback
       env = Environment.new 
 
       env.callback = self
       env.decorated = decorated # NOTE: could be an instance of UnboundMethod
-      env.base_method = opts[:base_method] || decorated
-      env.class = opts[:class]
+      env.base_method = base_method || decorated
+      env.class = klass
 
       # closure
       my_body = @body
@@ -72,10 +68,8 @@ module LocalMethodCallbacks
         }
       end
 
-      if !env.class.nil?
-        env.class.send(:define_method, env.base_method.name, decoration)
-        decoration = env.class.instance_method(env.base_method.name)
-      end
+      env.class.send(:define_method, env.base_method.name, decoration)
+      decoration = env.class.instance_method(env.base_method.name)
 
       return decoration
     end
