@@ -4,26 +4,20 @@ module LocalMethodCallbacks
   	# TODO - ban these
   	# BANNED_METHOD_NAMES = [:method]
 
-  	attr_reader :callbacks
+  	attr_reader :callbacks,
+  	 :default_opts # to cache some options (:object, :class, :callbacks, :method_names)
 
   	# default_opts: 
-  	# object: object whose methods are redefined
-  	# class: class whose methods are redefined
-  	# callbacks: list of callbacks LocalMethodCallbacks::Callback
-  	# methods: list of methods to be redefined
+  	# object - object whose methods are redefined
+  	# class - class whose methods are redefined
+  	# callbacks - list of callbacks LocalMethodCallbacks::Callback
+  	# method_names - list of methods (names) to be redefined
   	def initialize(opts = {})
   		@default_opts = opts.dup
   		@default_opts[:callbacks] ||= []
   		@default_opts[:method_names] ||= []
 	 	end
 
-		# we avoid using alias to allow nesting these (otherwise there is a loop)
-		# we could curry that object via register_object etc.
-		# we could also register callbacks to object - and trust the programmer to later unregister it (or not)
-		# but it forces us to keep track of all the methods in order to make it possible to unregister it
-		# and there would be a problem with garbage collecting - memory leaks (because bound methods point to the objects)
-		# - add with_class_callbacks_for - work same as with singleton_class
-		# so instance with_callbacks_for should delegate to with_class_callbacks_for
  		def with_callbacks(opts = {}, &block)
  			if opts.has_key?(:object)
  				# avoid calling opts[:object].singleton_class (in case smbdy wants to override it with this gem)
@@ -32,11 +26,18 @@ module LocalMethodCallbacks
  				opts = opts.merge(:class => singleton_klass)
  			end
 
- 			with_class_callbacks(opts, &block)
+ 			__with_callbacks__(opts, &block)
  		end
 
- 		# if no block is given, returns proc that accepts proc and calls it with decoration
-		def with_class_callbacks(opts = {}, &block)
+		# TODO
+		def wrap_with_callbacks(object, *methods)
+			Wrapper.new(object, methods.flatten, callbacks, configuration)
+		end
+
+		# we avoid using alias to allow nesting calls to #with_callbacks (otherwise there is a loop)
+		# we use block and closures to avoid problem with garbage collecting
+		# and memory leaks (because bound methods point to the objects)
+		def __with_callbacks__(opts = {}, &block)
 			opts = @default_opts.merge(opts)
 
 			# instance_method is a class-level method returning instance-level method, so it's ok
@@ -51,7 +52,7 @@ module LocalMethodCallbacks
 				end
 
 				yield
-			ensure
+			else
 				# cleanup
 				methods.each do |old_method|
 					if old_method.owner == opts[:class] 
@@ -62,11 +63,7 @@ module LocalMethodCallbacks
 				end
 			end
 		end
-
-		# TODO
-		def wrap_with_callbacks(object, *methods)
-			yield Wrapper.new(object, methods.flatten, callbacks, configuration)
-		end
+		private :__with_callbacks__
 
   end
 end
