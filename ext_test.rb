@@ -32,7 +32,12 @@ callback_chain.with_callbacks(objects: [s], method_names: [:to_i]) do
   p "x.to_i in block"
   p x.to_i
 
-  callback_chain.with_callbacks(objects: [s], classes: [String], method_names: [:to_i]) do
+  callback_chain.with_callbacks(classes: [String], method_names: [:to_i]) do
+    p "s.to_i in first nested block, shouldn't see any difference"
+    p s.to_i
+  end
+
+  callback_chain.with_callbacks(objects: [s, x], classes: [String], method_names: [:to_i]) do
     p "s.to_i in nested block"
     p s.to_i
 

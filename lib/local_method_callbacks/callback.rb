@@ -34,7 +34,8 @@ module LocalMethodCallbacks
     # decoration will become a method in a given klass
     # unfortunately we can't just return decoration without calling decoration.decorate_method!
     # - we'd loose the context of the receiver (self)
-    # (note that in Python this wouldn't be a problem)
+    # (note that in Python this wouldn't be a problem, because we pass the receiver explicitly
+    # as the first argument)
     def decorate_with_me!(decorated, klass, base_method = nil)
       # env is shared by every method call 
       # that's why we pass to the callback env.with_context

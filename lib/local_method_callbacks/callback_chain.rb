@@ -33,6 +33,11 @@ module LocalMethodCallbacks
 		# we avoid using alias to allow nesting calls to #with_callbacks (otherwise there is a loop)
 		# we use block and closures to avoid problem with garbage collecting
 		# and memory leaks (because bound methods point to the objects)
+		# - it's easy to clean everyting up
+
+    # NOTE - if we redefine the method in the original klass,
+    # the temporary method defined here won't see the change - 
+    # because it delegates to the original one stored in closure (see Callback#decorate_with_me!) 
 		def __with_callbacks__(opts = {}, &block)
 			methods_hash = Hash.new {|this, klass| this[klass] = []}
 
