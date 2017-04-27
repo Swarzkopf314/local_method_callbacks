@@ -21,18 +21,28 @@ end
 callback_chain = LocalMethodCallbacks::CallbackChain.new(callbacks: [before_callback, around_callback, after_callback])
 
 s = "314"
+x = "108"
 
-callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
+callback_chain.with_callbacks(objects: [s], method_names: [:to_i]) do
   p "s.dup.to_i in block"
   p s.dup.to_i
   p "s.to_i in block"
   p s.to_i
 
-  callback_chain.with_callbacks(object: s, method_names: [:to_i]) do
+  p "x.to_i in block"
+  p x.to_i
+
+  callback_chain.with_callbacks(objects: [s], classes: [String], method_names: [:to_i]) do
     p "s.to_i in nested block"
     p s.to_i
+
+    p "x.to_i in nested block"
+    p x.to_i
   end
 end
 
 p "s.to_i after block"
 p s.to_i
+
+p "x.to_i after block"
+p x.to_i
