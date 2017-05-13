@@ -14,7 +14,7 @@ module LocalMethodCallbacks
     # returns instance of Environment
     # we pass env.with_context to each callback defined by the user
     # therefore we do ret = self.dup to avoid user-caused bugs
-    def with_context(receiver, args, return_value, block)
+    def with_context(receiver, args, block)
       ret = self.dup # see comments above
 
       ret.receiver = receiver

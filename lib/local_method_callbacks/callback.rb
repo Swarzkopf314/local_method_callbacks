@@ -14,10 +14,18 @@ module LocalMethodCallbacks
     attr_reader :type, :body
 
     class Decoration < Proc
-      def decorate_method!(klass, name)
+      def define_method!(klass, name)
         klass.send(:define_method, name, self)
         
         return klass.instance_method(name)
+      end
+
+      # just calls super, this allows the method to be held in closure and still be sensitive to changes 
+      # in the original method
+      def self.define_placeholder!(klass, name)
+        placeholder = self.new {|*args, &block| super(*args, &block)}
+
+        placeholder.define_method!(klass, name)
       end
     end
 
@@ -32,7 +40,7 @@ module LocalMethodCallbacks
     end
 
     # decoration will become a method in a given klass
-    # unfortunately we can't just return decoration without calling decoration.decorate_method!
+    # unfortunately we can't just return decoration without calling decoration.define_method!
     # - we'd loose the context of the receiver (self)
     # (note that in Python this wouldn't be a problem, because we pass the receiver explicitly
     # as the first argument)
@@ -52,27 +60,27 @@ module LocalMethodCallbacks
       decoration = case @type
       when :before
         Decoration.new {|*args, &block|
-          env_with_context = env.with_context(self, args, nil, block)
+          env_with_context = env.with_context(self, args, block)
           
           my_body.call(env_with_context)
 
           env_with_context.decorated.call(*args, &block)
         }
       when :around
-        Decoration.new {|*args, &block| my_body.call env.with_context(self, args, nil, block)}
+        Decoration.new {|*args, &block| my_body.call env.with_context(self, args, block)}
       when :after
         Decoration.new {|*args, &block|
-          env_with_context = env.with_context(self, args, nil, block)
+          env_with_context = env.with_context(self, args, block)
 
           env_with_context.return_value = env_with_context.decorated.call(*args, &block)
 
-          my_body.call env_with_context
+          my_body.call(env_with_context)
 
           env_with_context.return_value
         }
       end
       
-      return decoration.decorate_method!(env.class, env.base_method.name)
+      return decoration.define_method!(env.class, env.base_method.name)
     end
 
     # If you want self.body to be instance_evaled

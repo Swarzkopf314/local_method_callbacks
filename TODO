@@ -1,6 +1,5 @@
-In short - patrzymy na obiekt/klasę (może singletonową), trzymamy w scop-ie metody, które w niej byly, dodefiniujemy opakowane, wywolujemy blok/funkcje, na koniec w finally/ensure usuwamy nowe metody i przywracamy te, ktore byly w obiekcie/klasie. 
-
-DODATKOWY PARAMETR - :recursive - czy w(y)łączyć callbacki w przypadku wywoływania danych metod wewnątrz przekazanycj callbacków? (grozi zapętleniem)
+Dodać lepiej opisane errory
+Testy!
 
 predefiniowane obiekty callbacków - logger etc.
 

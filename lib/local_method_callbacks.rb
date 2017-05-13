@@ -1,6 +1,7 @@
 require "local_method_callbacks/version"
 require "local_method_callbacks/callback"
 require "local_method_callbacks/callback_chain"
+require "local_method_callbacks/callback_error"
 require "local_method_callbacks/environment"
 
 module LocalMethodCallbacks
