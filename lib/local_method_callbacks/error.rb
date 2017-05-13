@@ -1,4 +1,4 @@
 module LocalMethodCallbacks
-  class CallbackError < Exception
+  class Error < Exception
   end
 end

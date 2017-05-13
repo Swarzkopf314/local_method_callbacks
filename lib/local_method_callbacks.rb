@@ -1,33 +1,29 @@
 require "local_method_callbacks/version"
 require "local_method_callbacks/callback"
 require "local_method_callbacks/callback_chain"
-require "local_method_callbacks/callback_error"
+require "local_method_callbacks/error"
 require "local_method_callbacks/environment"
+require "local_method_callbacks/wrapper"
 
 module LocalMethodCallbacks
 
-	def self.curry_callbacks(callbacks, &block)
-		Callbacks.new(callbacks, &block)
+	def self.make_callback(type, body = nil)
+		Callback.new(type, body, &block)
+	end
+
+	def self.curry_callbacks(opts = {})
+		CallbackChain.new(opts)
 	end 
 
-	# conveniece method to be included in object's class
-	def with_callbacks_for(methods, callbacks, &block)
-		LocalMethodCallbacks.with_callbacks_for(self, methods, callbacks, &block)
+	def self.wrap_with_callbacks(object, opts = {})
+		curry_callbacks(opts).wrap_with_callbacks(object)
 	end
 
-	def self.with_callbacks_for(object, methods, callbacks, &block)
-		curry_callbacks(callbacks).with_callbacks_for(object, methods, &block)
-	end
-
- 	## Wrapper
-
-	# conveniece method to be included in object's class
-	def wrap_with_callbacks(methods, callbacks)
-		LocalMethodCallbacks.wrap_with_callbacks(self, methods, callbacks)
-	end
-
-	def self.wrap_with_callbacks(object, methods, callbacks)
-		curry_callbacks(callbacks).wrap_with_callbacks(object, methods)
+	# if this gem fails somehow, raise LocalMethodCallbacks::Error
+	def self.with_internal_exceptions
+		yield
+	rescue Exception => e
+		raise Error, e.message, caller[1..-1]
 	end
 
 end

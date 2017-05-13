@@ -4,7 +4,8 @@ module LocalMethodCallbacks
   	# TODO - ban these
   	# BANNED_METHOD_NAMES = [:method]
 
-  	attr_reader :default_opts # to cache some options (:objects, :classes, :callbacks, :method_names)
+  	# to cache some options (:objects, :classes, :callbacks, :method_names)
+  	attr_reader :default_opts 
 
   	# default_opts: 
   	# objects - list of objects whose methods are to be redefined
@@ -16,9 +17,8 @@ module LocalMethodCallbacks
   		@default_opts.default_proc = proc {|this, key| this[key] = []}
 	 	end
 
-		# TODO
-		def wrap_with_callbacks(object, opts)
-			Wrapper.new(object, @default_opts.merge(opts))
+		def wrap_with_callbacks(object)
+			Wrapper.new(object, self)
 		end
 
  		def with_callbacks(opts = {}, &block)
@@ -42,7 +42,7 @@ module LocalMethodCallbacks
 		def __with_callbacks__(opts = {}, &block)
 			methods_hash = Hash.new {|this, klass| this[klass] = []}
 
-			with_internal_exceptions do
+			LocalMethodCallbacks.with_internal_exceptions do
 				# instance_method is a class-level method returning instance-level method, so it's ok
 				opts[:classes].each do |klass| # .hmap {|klass| {klass => opts[:method_names].map ... }}
 					methods_hash[klass] = opts[:method_names].map {|method_name| klass.instance_method(method_name)}
@@ -67,7 +67,7 @@ module LocalMethodCallbacks
 				yield
 			ensure
 				# cleanup
-				with_internal_exceptions do
+				LocalMethodCallbacks.with_internal_exceptions do
 					methods_hash.each do |klass, old_methods|
 						old_methods.each do |old_method|
 
@@ -83,13 +83,6 @@ module LocalMethodCallbacks
 			end # ensure
 		end
 		private :__with_callbacks__
-
-		def with_internal_exceptions
-			yield
-		rescue Exception => e
-			raise CallbackError, e.message, caller[1..-1]
-		end
-		private :with_internal_exceptions
 
   end
 end

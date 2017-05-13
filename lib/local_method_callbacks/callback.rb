@@ -6,12 +6,14 @@ module LocalMethodCallbacks
   class Callback
 
     TYPES = %i[before around after]
+   
     VALIDATE_CALLABLE = proc do |body|
-      raise "no body specified!" if body.nil?
-      raise "body should be callable!" unless body.respond_to?(:call)
+      raise Error, "no body specified!" if body.nil?
+      raise Error, "body should be callable!" unless body.respond_to?(:call)
     end
 
     attr_reader :type, :body
+
 
     class Decoration < Proc
       def define_method!(klass, name)
@@ -27,11 +29,12 @@ module LocalMethodCallbacks
 
         placeholder.define_method!(klass, name)
       end
-    end
+    end # Decoration
+
 
     # ignores decorated if block_given?
     def initialize(type, body = nil)
-      raise "uknown type: #{type}" unless TYPES.include?(type)
+      raise Error, "uknown type: #{type}" unless TYPES.include?(type)
       @type = type
       
       @body = block_given? ? Proc.new : body # Proc.new captures block - more efficent than &block
