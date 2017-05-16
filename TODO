@@ -1,5 +1,17 @@
 Dodać lepiej opisane errory
-Testy!
+
+###
+otestować:
+
+basics - z wykorzystaniem tablicy w closure
+wyjątki z bloku - kodu klienta;
+zagnieżdżone wywołania with_callbacks + zabawa z podmianą super methods
+sprawdzić, czy nie zostają śmieci
+przekazać złe parametry, żeby rzucił się internal error
+
+
+
+###
 
 predefiniowane obiekty callbacków - logger etc.
 

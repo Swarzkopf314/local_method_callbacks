@@ -51,14 +51,7 @@ module LocalMethodCallbacks
 				
 				methods_hash.each do |klass, methods|
 					methods.each do |method|
-						if method.owner != klass
-							# see comment above the definition of the method
-							method = Callback::Decoration.define_placeholder!(klass, method.name)
-						end
-
-						opts[:callbacks].inject(method) do |acc, callback|
-							callback.decorate_with_me!(acc, klass, method)
-						end
+						wrap_method_with_callbacks(method, klass, opts[:callbacks])
 					end
 				end
 			end # with_internal_exceptions
@@ -69,20 +62,32 @@ module LocalMethodCallbacks
 				# cleanup
 				LocalMethodCallbacks.with_internal_exceptions do
 					methods_hash.each do |klass, old_methods|
-						old_methods.each do |old_method|
-
-							if old_method.owner != klass 
-								klass.send(:remove_method, old_method.name)
-							else
-								klass.send(:define_method, old_method.name, old_method)
-							end
-						end
+						old_methods.each {|old_method| revert_method(old_method, klass)}
 					end
 				end # with_internal_exceptions
 
 			end # ensure
 		end
 		private :__with_callbacks__
+
+		def wrap_method_with_callbacks(method, klass, callbacks = @default_opts[:callbacks])
+			if method.owner != klass
+				# this allows the method to be sensitive to changes in the original method
+				method = Callback::Decoration.define_placeholder!(klass, method.name)
+			end
+
+			callbacks.inject(method) do |acc, callback|
+				callback.decorate_with_me!(acc, klass, method)
+			end
+		end
+
+		def revert_method(old_method, klass)
+			if old_method.owner != klass 
+				klass.send(:remove_method, old_method.name)
+			else
+				klass.send(:define_method, old_method.name, old_method)
+			end
+		end
 
   end
 end
