@@ -2,6 +2,8 @@
 # One can use the env to access scope of a decorated method.
 # ATTENTION - UnboundMethod is NOT callable!
 
+require_relative 'callback_decoration'
+
 module LocalMethodCallbacks
   class Callback
 
@@ -13,24 +15,6 @@ module LocalMethodCallbacks
     end
 
     attr_reader :type, :body
-
-
-    class Decoration < Proc
-      def define_method!(klass, name)
-        klass.send(:define_method, name, self)
-        
-        return klass.instance_method(name)
-      end
-
-      # just calls super, this allows the method to be held in closure and still be sensitive to changes 
-      # in the original method
-      def self.define_placeholder!(klass, name)
-        placeholder = self.new {|*args, &block| super(*args, &block)}
-
-        placeholder.define_method!(klass, name)
-      end
-    end # Decoration
-
 
     # ignores decorated if block_given?
     def initialize(type, body = nil)
