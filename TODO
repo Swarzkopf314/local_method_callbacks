@@ -6,4 +6,4 @@ wyjątki z bloku - kodu klienta;
 zagnieżdżone wywołania with_callbacks + zabawa z podmianą super methods
 sprawdzić, czy nie zostają śmieci
 przekazać złe parametry, żeby rzucił się internal error
-logger w testach
+test kolejności przekazywania callbackow i parametrow objects/classes

@@ -18,7 +18,11 @@ module LocalMethodCallbacks
 
 	def self.curry_callbacks(opts = {})
 		CallbackChain.new(opts)
-	end 
+	end
+
+	def self.with_callbacks(opts = {}, &block)
+		curry_callbacks(opts).with_callbacks(&block)
+	end
 
 	def self.wrap_with_callbacks(object, opts = {})
 		curry_callbacks(opts).wrap_with_callbacks(object)
