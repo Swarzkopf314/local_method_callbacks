@@ -2,13 +2,14 @@ module LocalMethodCallbacks
   
   Environment = Struct.new(
     :callback,
-    :decorated,
-    :base_method, # can be UnboundMethod
-    :class,
     :receiver,
+    :decorated,
+    :decorated_callable,
+    :base_method, # can be UnboundMethod
+    :method_name,
     :method_arguments,
     :method_block,
-    :return_value, # only in after_callback
+    :method_value, # only in after_callback
   ) do
 
     # returns instance of Environment
@@ -19,12 +20,15 @@ module LocalMethodCallbacks
 
       ret.receiver = receiver
       ret.method_arguments = args
-      ret.return_value = return_value
+      ret.method_value = method_value
       ret.method_block = block
+      ret.decorated_callable = ret.decorated
 
-      if self.decorated.is_a? UnboundMethod
-        ret.decorated = self.decorated.bind(receiver)
+      if ret.decorated_callable.is_a? UnboundMethod
+        ret.decorated_callable = ret.decorated_callable.bind(receiver)
       end
+
+      VALIDATE_CALLABLE.(ret.decorated_callable)
 
       ret
     end

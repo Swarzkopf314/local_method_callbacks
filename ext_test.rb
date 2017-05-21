@@ -1,24 +1,24 @@
 require "bundler/setup"
 require "local_method_callbacks"
 
-before_callback = LocalMethodCallbacks::Callback.new(:before) do |env|
+before_callback = LocalMethodCallbacks.make_callback(:before) do |env|
   p "#{env.base_method.name} has been called with args: #{env.method_arguments}"
   p "RECEIVER: #{env.receiver}"
 end
 
-around_callback = LocalMethodCallbacks::Callback.new(:around) do |env|
+around_callback = LocalMethodCallbacks.make_callback(:around) do |env|
   p "around callback has been called for method: #{env.base_method.name}"
-  ret = env.decorated.call(*env.method_arguments, &env.method_block)
+  ret = env.decorated_callable.call(*env.method_arguments, &env.method_block)
   p "around callback is finished with ret: #{ret}"
   ret
 end
 
-after_callback = LocalMethodCallbacks::Callback.new(:after) do |env|
-  p "#{env.base_method.name} has been called with return value: #{env.return_value}"
+after_callback = LocalMethodCallbacks.make_callback(:after) do |env|
+  p "#{env.base_method.name} has been called with return value: #{env.method_value}"
   p "RECEIVER: #{env.receiver}"
 end
 
-callback_chain = LocalMethodCallbacks::CallbackChain.new(callbacks: [before_callback, around_callback, after_callback])
+callback_chain = LocalMethodCallbacks.curry_callbacks(callbacks: [before_callback, around_callback, after_callback])
 
 s = "314"
 x = "108"

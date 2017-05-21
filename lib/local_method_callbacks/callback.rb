@@ -8,11 +8,6 @@ module LocalMethodCallbacks
   class Callback
 
     TYPES = %i[before around after]
-   
-    VALIDATE_CALLABLE = proc do |body|
-      raise Error, "no body specified!" if body.nil?
-      raise Error, "body should be callable!" unless body.respond_to?(:call)
-    end
 
     attr_reader :type, :body
 
@@ -39,7 +34,7 @@ module LocalMethodCallbacks
       env.callback = self
       env.decorated = decorated # NOTE: could be an instance of UnboundMethod
       env.base_method = base_method || decorated
-      env.class = klass
+      env.method_name = env.base_method.name if env.base_method.respond_to?(:name)
 
       # closure
       my_body = @body
@@ -51,7 +46,7 @@ module LocalMethodCallbacks
           
           my_body.call(env_with_context)
 
-          env_with_context.decorated.call(*args, &block)
+          env_with_context.decorated_callable.call(*args, &block)
         }
       when :around
         Decoration.new {|*args, &block| my_body.call env.with_context(self, args, block)}
@@ -59,15 +54,15 @@ module LocalMethodCallbacks
         Decoration.new {|*args, &block|
           env_with_context = env.with_context(self, args, block)
 
-          env_with_context.return_value = env_with_context.decorated.call(*args, &block)
+          env_with_context.method_value = env_with_context.decorated_callable.call(*args, &block)
 
           my_body.call(env_with_context)
 
-          env_with_context.return_value
+          env_with_context.method_value
         }
       end
       
-      return decoration.define_method!(env.class, env.base_method.name)
+      return decoration.define_method!(klass, env.base_method.name)
     end
 
     # If you want self.body to be instance_evaled

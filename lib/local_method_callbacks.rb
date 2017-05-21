@@ -7,7 +7,12 @@ require "local_method_callbacks/wrapper"
 
 module LocalMethodCallbacks
 
-	def self.make_callback(type, body = nil)
+  VALIDATE_CALLABLE = proc do |body|
+    raise Error, "no body specified!" if body.nil?
+    raise Error, "body should be callable!" unless body.respond_to?(:call)
+  end
+
+	def self.make_callback(type, body = nil, &block)
 		Callback.new(type, body, &block)
 	end
 
