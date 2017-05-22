@@ -1,6 +1,6 @@
 module LocalMethodCallbacks
   
-  Environment = Struct.new(
+  MethodEnv = Struct.new(
     :callback,
     :receiver,
     :decorated,
@@ -12,7 +12,7 @@ module LocalMethodCallbacks
     :method_value, # only in after_callback
   ) do
 
-    # returns instance of Environment
+    # returns instance of MethodEnv
     # we pass env.with_context to each callback defined by the user
     # therefore we do ret = self.dup to avoid user-caused bugs
     def with_context(receiver, args, block)

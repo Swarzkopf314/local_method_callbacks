@@ -1,3 +1,6 @@
+require_relative "wrapper"
+require_relative "callback_decoration"
+
 module LocalMethodCallbacks
   class CallbackChain
 
@@ -62,7 +65,7 @@ module LocalMethodCallbacks
 				# cleanup
 				LocalMethodCallbacks.with_internal_exceptions do
 					methods_hash.each do |klass, old_methods|
-						old_methods.each {|old_method| revert_method(old_method, klass)}
+						old_methods.each {|old_method| revert_to_method(old_method, klass)}
 					end
 				end # with_internal_exceptions
 
@@ -73,7 +76,7 @@ module LocalMethodCallbacks
 		def wrap_method_with_callbacks(method, klass, callbacks = @default_opts[:callbacks])
 			if method.owner != klass
 				# this allows the method to be sensitive to changes in the original method
-				method = Callback::Decoration.define_placeholder!(klass, method.name)
+				method = CallbackDecoration.define_placeholder!(klass, method.name)
 			end
 
 			callbacks.inject(method) do |acc, callback|
@@ -81,7 +84,7 @@ module LocalMethodCallbacks
 			end
 		end
 
-		def revert_method(old_method, klass)
+		def revert_to_method(old_method, klass)
 			if old_method.owner != klass 
 				klass.send(:remove_method, old_method.name)
 			else

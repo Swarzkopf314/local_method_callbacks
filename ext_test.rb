@@ -18,7 +18,7 @@ after_callback = LocalMethodCallbacks.make_callback(:after) do |env|
   p "RECEIVER: #{env.receiver}"
 end
 
-callback_chain = LocalMethodCallbacks.curry_callbacks(callbacks: [before_callback, around_callback, after_callback])
+callback_chain = LocalMethodCallbacks.callback_chain(callbacks: [before_callback, around_callback, after_callback])
 
 s = "314"
 x = "108"
@@ -51,3 +51,19 @@ p s.to_i
 
 p "x.to_i after block"
 p x.to_i
+
+def s.cache_test
+  p "not cached"
+  return "cache_test_value"
+end
+
+caching_callback_chain = LocalMethodCallbacks.caching_callback_chain(objects: [s], method_names: [:cache_test]) 
+
+caching_callback_chain.with_callbacks do
+
+  3.times do
+    p s.cache_test
+  end
+
+end
+

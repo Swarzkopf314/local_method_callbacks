@@ -7,3 +7,4 @@ zagnieżdżone wywołania with_callbacks + zabawa z podmianą super methods
 sprawdzić, czy nie zostają śmieci
 przekazać złe parametry, żeby rzucił się internal error
 test kolejności przekazywania callbackow i parametrow objects/classes
+klasa Cacher + test keszowania (czy faktycznie sie keszuje)

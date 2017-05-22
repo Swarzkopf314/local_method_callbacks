@@ -1,7 +1,8 @@
-# The Callback#body should be a decorated accepting one argument - env of class Environment.
+# The Callback#body should be a decorated accepting one argument - env of class MethodEnv.
 # One can use the env to access scope of a decorated method.
 # ATTENTION - UnboundMethod is NOT callable!
 
+require_relative 'method_env'
 require_relative 'callback_decoration'
 
 module LocalMethodCallbacks
@@ -29,7 +30,7 @@ module LocalMethodCallbacks
     def decorate_with_me!(decorated, klass, base_method = nil)
       # env is shared by every method call 
       # that's why we pass to the callback env.with_context
-      env = Environment.new
+      env = MethodEnv.new
 
       env.callback = self
       env.decorated = decorated # NOTE: could be an instance of UnboundMethod
@@ -41,7 +42,7 @@ module LocalMethodCallbacks
 
       decoration = case @type
       when :before
-        Decoration.new {|*args, &block|
+        CallbackDecoration.new {|*args, &block|
           env_with_context = env.with_context(self, args, block)
           
           my_body.call(env_with_context)
@@ -49,9 +50,9 @@ module LocalMethodCallbacks
           env_with_context.decorated_callable.call(*args, &block)
         }
       when :around
-        Decoration.new {|*args, &block| my_body.call env.with_context(self, args, block)}
+        CallbackDecoration.new {|*args, &block| my_body.call env.with_context(self, args, block)}
       when :after
-        Decoration.new {|*args, &block|
+        CallbackDecoration.new {|*args, &block|
           env_with_context = env.with_context(self, args, block)
 
           env_with_context.method_value = env_with_context.decorated_callable.call(*args, &block)

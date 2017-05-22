@@ -1,3 +1,4 @@
+require_relative 'callback_decoration'
 
 module LocalMethodCallbacks
   class Wrapper < Delegator
@@ -6,7 +7,7 @@ module LocalMethodCallbacks
       singleton = class << self; self end
 
       methods = callback_chain.default_opts[:method_names].map do |name|
-        Callback::Decoration.define_placeholder!(singleton, name)
+        CallbackDecoration.define_placeholder!(singleton, name)
       end
 
       methods.each do |method|
