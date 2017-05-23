@@ -13,6 +13,7 @@ module LocalMethodCallbacks
       "#{receiver.object_id}_#{method_name}"
     end
 
+    # cache_store expires with this object, so no worries about GC
     def initialize(cache_store = {})
       
       body = proc do |env|

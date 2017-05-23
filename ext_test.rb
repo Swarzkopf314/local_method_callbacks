@@ -53,16 +53,22 @@ p "x.to_i after block"
 p x.to_i
 
 def s.cache_test
-  p "not cached"
-  return "cache_test_value"
+  p "not cached s"
+  return "cache_test_value s"
 end
 
-caching_callback_chain = LocalMethodCallbacks.caching_callback_chain(objects: [s], method_names: [:cache_test]) 
+def x.cache_test
+  p "not cached x"
+  return "cache_test_value x"
+end
+
+caching_callback_chain = LocalMethodCallbacks.caching_callback_chain(objects: [s, x], method_names: [:cache_test]) 
 
 caching_callback_chain.with_callbacks do
 
   3.times do
     p s.cache_test
+    p x.cache_test
   end
 
 end
