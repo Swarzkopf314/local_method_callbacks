@@ -1,40 +1,43 @@
 require "local_method_callbacks/version"
-require "local_method_callbacks/configuration"
+require "local_method_callbacks/callback"
+require "local_method_callbacks/callback_chain"
+require "local_method_callbacks/error"
+
+require "local_method_callbacks/cacher"
 
 module LocalMethodCallbacks
-	extend Configuration
 
-	# override
-	def self.default_configuration
-		super.tap do |config|
-			config.pass_receiver = false
-			config.pass_method_name = false
-			config.instance_eval = false
-		end
+  VALIDATE_CALLABLE = proc do |body|
+    raise Error, "no body specified!" if body.nil?
+    raise Error, "body should be callable!" unless body.respond_to?(:call)
+  end
+
+	def self.make_callback(type, body = nil, &block)
+		Callback.new(type, body, &block)
 	end
 
-	def self.curry_callbacks(callbacks, &block)
-		Callbacks.new(callbacks, &block)
-	end 
-
-	# conveniece method to be included in object's class
-	def with_callbacks_for(methods, callbacks, &block)
-		LocalMethodCallbacks.with_callbacks_for(self, methods, callbacks, &block)
+	def self.callback_chain(opts = {})
+		CallbackChain.new(opts)
 	end
 
-	def self.with_callbacks_for(object, methods, callbacks, &block)
-		curry_callbacks(callbacks).with_callbacks_for(object, methods, &block)
+	def self.caching_callback_chain(opts = {})
+		opts[:callbacks] = [Cacher.new]
+		callback_chain(opts)
 	end
+	
+	# def self.with_callbacks(opts = {}, &block)
+	# 	callback_chain(opts).with_callbacks(&block)
+	# end
 
- 	## Wrapper
+	# def self.wrap_with_callbacks(object, opts = {})
+	# 	callback_chain(opts).wrap_with_callbacks(object)
+	# end
 
-	# conveniece method to be included in object's class
-	def wrap_with_callbacks(methods, callbacks)
-		LocalMethodCallbacks.wrap_with_callbacks(self, methods, callbacks)
-	end
-
-	def self.wrap_with_callbacks(object, methods, callbacks)
-		curry_callbacks(callbacks).wrap_with_callbacks(object, methods)
+	# if this gem fails somehow, raise LocalMethodCallbacks::Error
+	def self.with_internal_exceptions
+		yield
+	rescue Exception => e
+		raise Error, e.message, caller[1..-1]
 	end
 
 end

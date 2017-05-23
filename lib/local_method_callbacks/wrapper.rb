@@ -1,20 +1,20 @@
-require 'set'
+require_relative 'callback_decoration'
 
 module LocalMethodCallbacks
   class Wrapper < Delegator
 
-  	def initialize(object, methods, callbacks, config = OpenStruct.new)
-  		@methods = Set.new(methods.map(&:to_sym))
-  		@callbacks, @configuration = callbacks, config
-  		super(object)
+  	def initialize(object, callback_chain)
+      singleton = class << self; self end
 
-  		yield @configuration if block_given?
-  	end
+      methods = callback_chain.default_opts[:method_names].map do |name|
+        CallbackDecoration.define_placeholder!(singleton, name)
+      end
 
-  	def method_missing(method, *args, &block)
-  		return super unless @methods.include?(method)
+      methods.each do |method|
+        callback_chain.wrap_method_with_callbacks(method, singleton)
+      end
 
-  		# TODO
+      super(object)
   	end
 
   end
