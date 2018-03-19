@@ -33,7 +33,9 @@ module LocalMethodCallbacks
 	# 	callback_chain(opts).wrap_with_callbacks(object)
 	# end
 
-	# if this gem fails somehow, raise LocalMethodCallbacks::Error
+	# if this gem fails anyhow, raise LocalMethodCallbacks::Error
+	# TODO - not sure if this is a good idea, we shouldn't catch all Exceptions 
+	# nor should we effectively delete the backtrace...
 	def self.with_internal_exceptions
 		yield
 	rescue Exception => e
