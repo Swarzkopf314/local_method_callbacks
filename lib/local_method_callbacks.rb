@@ -38,8 +38,8 @@ module LocalMethodCallbacks
 	# nor should we effectively delete the backtrace...
 	def self.with_internal_exceptions
 		yield
-	rescue Exception => e
-		raise Error, e.message, caller[1..-1]
+	rescue => e
+		raise UnhandledGemError, e.message, e.backtrace#caller[1..-1]
 	end
 
 end

@@ -3,4 +3,8 @@ module LocalMethodCallbacks
   # bald "rescue" catches StandardError, but not Exception
   class Error < StandardError
   end
+
+  class UnhandledGemError < Error
+  end
+
 end
