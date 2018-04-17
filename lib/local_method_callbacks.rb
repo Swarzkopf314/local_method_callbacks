@@ -33,13 +33,14 @@ module LocalMethodCallbacks
 	# 	callback_chain(opts).wrap_with_callbacks(object)
 	# end
 
-	# if this gem fails anyhow, raise LocalMethodCallbacks::Error
-	# TODO - not sure if this is a good idea, we shouldn't catch all Exceptions 
-	# nor should we effectively delete the backtrace...
+	# This is usefull while calling CallbackChain#__with_callbacks__
+	# - it helps the user distinguish between errors in his methods and
+	# errors which are coused by this gem
+	# NOTE - it's important because of the nature of this gem - it redefines user's methods
 	def self.with_internal_exceptions
 		yield
 	rescue => e
-		raise UnhandledGemError, e.message, e.backtrace#caller[1..-1]
+		raise UnhandledGemError, e.message, e.backtrace
 	end
 
 end
